@@ -21,7 +21,11 @@ LAN8720 模块板载 25MHz 晶振,PHY地址为1,nRST内部上拉
 1.分析当前开发环境中是否支持LAN8720作为网卡挂载到ESP32上,并作为dhcp server为接入设备分配IP,
 只生成一份分析报告放在DOC文件夹下即可,不必生成代码
 2.分析当前实现LAN8720作为dhcp server的步骤,给出软件流程说明,说明文档放在DOC下
-3.
+3.添加wifi sta功能,wifi在lan8720初始化之前开启,wifi的IP获取方式是dhcp,
+wifi要连接的热点名称为OPPOFindx7,密码是8gtx8gtx,WIFI程序与ethernet做好隔离,不要耦合
+4.ESP32 以 Wi-Fi STA 作为上行 WAN（DHCP 客户端）接入上游 AP，
+以以太网作为下行 LAN（静态 IP + DHCP 服务器）连接有线设备，
+并通过 lwIP NAPT 实现有线设备共享 Wi-Fi 上行接入的软件 NAT 网关。
 [代码编写记录]
 1.基于 [文档].2 落实代码
 
