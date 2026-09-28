@@ -1,0 +1,28 @@
+[框架说明]
+CODE中放置编写的代码,inc放.h文件,src放.c文件
+DOC中放置编写的文档,默认格式为md
+managed_components\espressif__lan87xx中是从官方组件中获取的LAN8720的驱动程序
+开发环境:使用espidf6.0.2,sdk所在路径为:D:\savefile\espidf_pack2\v6.0.2
+芯片型号:esp32_wroom_32
+[硬件接线]
+GPIO	    LAN8720 引脚
+GPIO19	    TX0
+GPIO21    	TX_EN
+GPIO22  	TX1
+GPIO25	    RX0
+GPIO26	    RX1
+GPIO27	    CRS
+GPIO23   	MDC
+GPIO18  	MDIO
+GPIO0	    nINT / REFCLK
+[现状补充]
+LAN8720 模块板载 25MHz 晶振,PHY地址为1,nRST内部上拉
+[文档编写记录]
+1.分析当前开发环境中是否支持LAN8720作为网卡挂载到ESP32上,并作为dhcp server为接入设备分配IP,
+只生成一份分析报告放在DOC文件夹下即可,不必生成代码
+2.分析当前实现LAN8720作为dhcp server的步骤,给出软件流程说明,说明文档放在DOC下
+3.
+[代码编写记录]
+1.基于 [文档].2 落实代码
+
+
