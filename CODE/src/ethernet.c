@@ -29,6 +29,15 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         break;
     case ETHERNET_EVENT_CONNECTED:
         ESP_LOGI(TAG, "Ethernet link up");
+
+        /* 在 LAN 网卡(以太网)上启用 NAPT:入包网卡带 napt 标志才做源地址改写 */
+        err = esp_netif_napt_enable(s_eth_netif);
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "NAPT enabled on LAN");
+        } else {
+            ESP_LOGW(TAG, "NAPT enable failed: %s", esp_err_to_name(err));
+        }
+
         err = esp_netif_dhcps_start(s_eth_netif);
         if (err == ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED) {
             ESP_LOGI(TAG, "DHCP server already running");
@@ -103,7 +112,18 @@ void ethernet_init(void)
     };
     ESP_ERROR_CHECK(esp_netif_set_ip_info(s_eth_netif, &ip_info));
 
-    /* 8. 启动以太网(链路建立后由事件回调启动 DHCP 服务器) */
+    /* 8. 给 LAN 客户端下发 DNS(两步:设 IP + 打开下发开关) */
+    esp_netif_dns_info_t dns = {
+        .ip = ESP_IP4ADDR_INIT(8, 8, 8, 8),   /* 可换成 114.114.114.114(国内更快) */
+    };
+    ESP_ERROR_CHECK(esp_netif_set_dns_info(s_eth_netif, ESP_NETIF_DNS_MAIN, &dns));
+
+    uint8_t offer_dns = 1;
+    ESP_ERROR_CHECK(esp_netif_dhcps_option(s_eth_netif, ESP_NETIF_OP_SET,
+                                           ESP_NETIF_DOMAIN_NAME_SERVER,
+                                           &offer_dns, sizeof(offer_dns)));
+
+    /* 9. 启动以太网(链路建立后由事件回调启动 DHCP 服务器) */
     ESP_ERROR_CHECK(esp_eth_start(s_eth_handle));
 
     ESP_LOGI(TAG, "Ethernet init done, static IP 192.168.4.1");
