@@ -31,7 +31,7 @@
   "clangd.arguments": [
     "--background-index",
     "--query-driver=**",
-    "--compile-commands-dir=d:\\HuaweiMoveData\\Users\\19130\\Desktop\\LWIP\\ESP32_WROOM_32\\ESP32_WROOM_32\\build"
+    "--compile-commands-dir=d:\\HuaweiMoveData\\Users\\19130\\Desktop\\LWIP\\router\\build"
   ],
   "idf.flashType": "UART"
 }
