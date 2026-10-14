@@ -19,6 +19,11 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     uint8_t mac_addr[6] = {0};
     esp_err_t err;
 
+    /* 只处理本网卡的事件(两个以太网口共用 ETH_EVENT,按 handle 区分) */
+    if (*(esp_eth_handle_t *)event_data != s_eth_handle) {
+        return;
+    }
+
     switch (event_id) {
     case ETHERNET_EVENT_START:
         ESP_LOGI(TAG, "Ethernet started");
@@ -44,7 +49,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         } else if (err != ESP_OK) {
             ESP_LOGW(TAG, "DHCP server start failed: %s", esp_err_to_name(err));
         } else {
-            ESP_LOGI(TAG, "DHCP server started, serving 192.168.4.0/24");
+            ESP_LOGI(TAG, "DHCP server started, serving 192.168.88.0/24");
         }
         break;
     case ETHERNET_EVENT_DISCONNECTED:
@@ -66,6 +71,7 @@ void ethernet_init(void)
 {
     /* 1. 创建以太网 netif,声明为 DHCP 服务器(默认是 DHCP 客户端,不分配 dhcps 对象) */
     esp_netif_inherent_config_t base_cfg = ESP_NETIF_INHERENT_DEFAULT_ETH();
+    base_cfg.if_key = "ETH0";   /* 唯一 key,与 W5500 的 netif 区分(默认都是 ETH_DEF,会重复) */
     base_cfg.flags = (esp_netif_flags_t)(ESP_NETIF_IPV4_ONLY_FLAGS(ESP_NETIF_DHCP_SERVER) |
                                          ESP_NETIF_DEFAULT_ARP_FLAGS |
                                          ESP_NETIF_FLAG_EVENT_IP_MODIFIED |
@@ -102,13 +108,13 @@ void ethernet_init(void)
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID,
                                                eth_event_handler, NULL));
 
-    /* 7. 停止 DHCP 服务器(置为 STOPPED 状态),配置本机静态 IP(192.168.4.1/24) */
+    /* 7. 停止 DHCP 服务器(置为 STOPPED 状态),配置本机静态 IP(192.168.88.1/24) */
     ESP_ERROR_CHECK(esp_netif_dhcps_stop(s_eth_netif));
 
     esp_netif_ip_info_t ip_info = {
-        .ip      = { .addr = ESP_IP4TOADDR(192, 168, 4, 1) },
+        .ip      = { .addr = ESP_IP4TOADDR(192, 168, 88, 1) },
         .netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) },
-        .gw      = { .addr = ESP_IP4TOADDR(192, 168, 4, 1) },
+        .gw      = { .addr = ESP_IP4TOADDR(192, 168, 88, 1) },
     };
     ESP_ERROR_CHECK(esp_netif_set_ip_info(s_eth_netif, &ip_info));
 
@@ -126,5 +132,5 @@ void ethernet_init(void)
     /* 9. 启动以太网(链路建立后由事件回调启动 DHCP 服务器) */
     ESP_ERROR_CHECK(esp_eth_start(s_eth_handle));
 
-    ESP_LOGI(TAG, "Ethernet init done, static IP 192.168.4.1");
+    ESP_LOGI(TAG, "Ethernet init done, static IP 192.168.88.1");
 }

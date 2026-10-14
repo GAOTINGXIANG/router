@@ -29,6 +29,11 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     uint8_t mac_addr[6] = {0};
     esp_err_t err;
 
+    /* 只处理本网卡的事件(两个以太网口共用 ETH_EVENT,按 handle 区分) */
+    if (*(esp_eth_handle_t *)event_data != s_eth_handle) {
+        return;
+    }
+
     switch (event_id) {
     case ETHERNET_EVENT_START:
         ESP_LOGI(TAG, "Ethernet started");
@@ -76,6 +81,7 @@ void w5500_ethernet_init(void)
 {
     /* 1. 创建以太网 netif,声明为 DHCP 服务器 */
     esp_netif_inherent_config_t base_cfg = ESP_NETIF_INHERENT_DEFAULT_ETH();
+    base_cfg.if_key = "ETH1";   /* 唯一 key,与 LAN8720 的 netif 区分(默认都是 ETH_DEF,会重复) */
     base_cfg.flags = (esp_netif_flags_t)(ESP_NETIF_IPV4_ONLY_FLAGS(ESP_NETIF_DHCP_SERVER) |
                                          ESP_NETIF_DEFAULT_ARP_FLAGS |
                                          ESP_NETIF_FLAG_EVENT_IP_MODIFIED |
